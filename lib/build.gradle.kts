@@ -9,6 +9,7 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     kotlin("jvm") version "1.4.30"
+    kotlin("kapt") version "1.4.30"
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 }
@@ -21,6 +22,10 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    implementation("com.squareup.moshi:moshi:1.11.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.11.0")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.11.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")

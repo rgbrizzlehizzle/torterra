@@ -1,5 +1,9 @@
 package org.leafygreens.torterra
 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.ExperimentalPathApi
@@ -26,7 +30,7 @@ object Torterra {
         """.trimIndent()
 
     @OptIn(ExperimentalPathApi::class)
-    fun generate(providerLookup: ProviderLookup) {
+    fun generateJsonSchema(providerLookup: ProviderLookup): String {
         val providerDir = createTempDirectory("torterra-${providerLookup.name}-").toFile()
         val template = providerTemplate
             .replace(NAME_MARKER, providerLookup.name)
@@ -39,6 +43,15 @@ object Torterra {
         val schemaFile = File("${providerDir.absolutePath}/schema.json")
         schemaFile.createNewFile()
         TERRAFORM_PROVIDER_SCHEMA.runCommandToFile(providerDir, schemaFile)
+        return schemaFile.readText()
+    }
+
+    fun convertToSchema(json: String): ProviderSchemaWrapper {
+        val moshi: Moshi = Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
+        val adapter: JsonAdapter<ProviderSchemaWrapper> = moshi.adapter(ProviderSchemaWrapper::class.java)
+        return adapter.fromJson(json) ?: error("Could not decode 😭")
     }
 
     private fun String.runCommand(workingDir: File) {
@@ -62,7 +75,17 @@ object Torterra {
 }
 
 fun main() {
-    val testProvider = ProviderLookup("docker", "kreuzwerker/docker", "2.11.0")
+//    val testProvider = ProviderLookup("docker", "kreuzwerker/docker", "2.11.0")
 //    val testProvider = ProviderLookup("aws", "hashicorp/aws", "~> 3.0")
-    Torterra.generate(testProvider)
+//    Torterra.generate(testProvider)
+    val snapshotPath = "lib/src/main/resources/"
+    val file = File("$snapshotPath/docker.json")
+    val json = file.readText()
+    val result = Torterra.convertToSchema(json)
+    println(result)
+    val moshi: Moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
+    val adapter: JsonAdapter<ProviderSchemaWrapper> = moshi.adapter(ProviderSchemaWrapper::class.java)
+    println(adapter.toJson(result))
 }
