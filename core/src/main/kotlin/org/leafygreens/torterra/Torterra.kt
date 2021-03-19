@@ -28,6 +28,13 @@ object Torterra {
             }
         """.trimIndent()
 
+  fun generateProviderDsl(providerLookup: ProviderLookup) {
+    val schemaJson = generateJsonSchema(providerLookup)
+    val schema = convertToSchema(schemaJson)
+    // TODO Generate Provider Classes
+    // TODO Generate DSL
+  }
+
   @OptIn(ExperimentalPathApi::class)
   internal fun generateJsonSchema(providerLookup: ProviderLookup): String {
     val providerDir = createTempDirectory("torterra-${providerLookup.name}-").toFile()
@@ -80,5 +87,4 @@ object Torterra {
       .start()
       .waitFor(60, TimeUnit.MINUTES)
   }
-
 }

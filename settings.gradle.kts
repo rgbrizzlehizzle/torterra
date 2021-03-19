@@ -8,4 +8,9 @@
  */
 
 rootProject.name = "torterra"
-include("lib")
+
+include("core")
+findProject(":core")?.name = "torterra-core"
+
+include("processor")
+findProject(":processor")?.name = "torterra-processor"
