@@ -1,6 +1,12 @@
 package org.leafygreens.torterra
 
-import com.squareup.moshi.*
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.ToJson
 
 // Models -> https://www.terraform.io/docs/cli/commands/providers/schema.html#providers-schema-representation
 @JsonClass(generateAdapter = true)
@@ -64,16 +70,20 @@ enum class BlockAttributeCollection(val value: String) {
   }
 }
 
-sealed class BlockAttributeType() {
+sealed class BlockAttributeType {
   class SimpleBlockAttributeType(val type: String) : BlockAttributeType()
-  class NestedBlockAttributeType(val collection: BlockAttributeCollection, val nested: BlockAttributeType) : BlockAttributeType()
+  class NestedBlockAttributeType(
+    val collection: BlockAttributeCollection,
+    val nested: BlockAttributeType
+  ) : BlockAttributeType()
+
   class ObjectBlockAttributeType(val types: Map<String, BlockAttributeType>) : BlockAttributeType()
 }
 
 class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
   @FromJson
   override fun fromJson(reader: JsonReader): BlockAttributeType? {
-    return when(reader.peek()) {
+    return when (reader.peek()) {
       JsonReader.Token.BEGIN_ARRAY -> readTuple(reader)
       JsonReader.Token.STRING -> BlockAttributeType.SimpleBlockAttributeType(reader.nextString())
       else -> error("Unexpected peek token: ${reader.peek()}")
@@ -83,7 +93,7 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
   private fun readTuple(reader: JsonReader): BlockAttributeType {
     reader.beginArray()
     val first = BlockAttributeCollection.fromValue(reader.nextString())
-    val second = when(reader.peek()) {
+    val second = when (reader.peek()) {
       JsonReader.Token.STRING -> BlockAttributeType.SimpleBlockAttributeType(reader.nextString())
       JsonReader.Token.BEGIN_ARRAY -> readTuple(reader)
       JsonReader.Token.BEGIN_OBJECT -> readObject(reader)
@@ -98,7 +108,7 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
     reader.beginObject()
     while (reader.peek() == JsonReader.Token.NAME) {
       val key = reader.nextName()
-      val value = when(reader.peek()) {
+      val value = when (reader.peek()) {
         JsonReader.Token.BEGIN_ARRAY -> readTuple(reader)
         JsonReader.Token.STRING -> BlockAttributeType.SimpleBlockAttributeType(reader.nextString())
         else -> error("Unexpected peek token: ${reader.peek()}")
@@ -111,7 +121,7 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
 
   @ToJson
   override fun toJson(writer: JsonWriter, value: BlockAttributeType?) {
-    when(value) {
+    when (value) {
       is BlockAttributeType.SimpleBlockAttributeType -> writer.value(value.type)
       is BlockAttributeType.NestedBlockAttributeType -> writer.writeNested(value)
       is BlockAttributeType.ObjectBlockAttributeType -> writer.writeObject(value)
@@ -122,7 +132,7 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
   private fun JsonWriter.writeNested(value: BlockAttributeType.NestedBlockAttributeType) {
     beginArray()
     value(value.collection.value)
-    when(value.nested) {
+    when (value.nested) {
       is BlockAttributeType.SimpleBlockAttributeType -> value(value.nested.type)
       is BlockAttributeType.NestedBlockAttributeType -> writeNested(value.nested)
       is BlockAttributeType.ObjectBlockAttributeType -> writeObject(value.nested)
@@ -134,7 +144,7 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
     beginObject()
     value.types.forEach { (k, v) ->
       name(k)
-      when(v) {
+      when (v) {
         is BlockAttributeType.SimpleBlockAttributeType -> value(v.type)
         is BlockAttributeType.NestedBlockAttributeType -> writeNested(v)
         is BlockAttributeType.ObjectBlockAttributeType -> writeObject(v)
@@ -142,14 +152,17 @@ class BlockAttributeTypeJsonAdapter : JsonAdapter<BlockAttributeType>() {
     }
     endObject()
   }
-
 }
 
 enum class NestingMode {
-  single,
-  list,
-  set,
-  map
+  @Json(name = "single")
+  SINGLE,
+  @Json(name = "list")
+  LIST,
+  @Json(name = "set")
+  SET,
+  @Json(name = "map")
+  MAP
 }
 
 data class BlockType(
