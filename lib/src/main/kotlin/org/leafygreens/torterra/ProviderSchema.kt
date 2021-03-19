@@ -28,8 +28,10 @@ data class BlockRepresentation(
   val attributes: Map<String, BlockAttributes>?,
   @Json(name = "block_types")
   val blockTypes: Map<String, BlockType>?,
+  val description: String?,
   @Json(name = "description_kind")
-  val descriptionKind: String?
+  val descriptionKind: String?,
+  val deprecated: Boolean?
 )
 
 @JsonClass(generateAdapter = false)
@@ -41,7 +43,8 @@ data class BlockAttributes(
   val required: Boolean?,
   val optional: Boolean?,
   val computed: Boolean?,
-  val sensitive: Boolean?
+  val sensitive: Boolean?,
+  val deprecated: Boolean?
 )
 
 enum class BlockAttributeCollection(val value: String) {

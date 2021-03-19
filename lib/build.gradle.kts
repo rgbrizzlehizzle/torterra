@@ -27,6 +27,45 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.11.0")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.11.0")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+  // TESTING
+  val junitVersion = "5.6.2"
+  val mockkVersion = "1.10.0"
+  val truthVersion = "1.0.1"
+
+  // Use JUnit Jupiter API
+  testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
+  // Mockk
+  testImplementation("io.mockk:mockk:$mockkVersion")
+
+  // Truth
+  testImplementation("com.google.truth:truth:$truthVersion")
+}
+
+tasks {
+  test {
+    useJUnitPlatform()
+  }
+  withType<AbstractTestTask> {
+    testLogging {
+      setExceptionFormat("full")
+    }
+    afterSuite(
+      KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+        if (desc.parent == null) { // will match the outermost suite
+          println(
+            "Results: ${result.resultType} (${result.testCount} tests, " +
+              "${result.successfulTestCount} successes, " +
+              "${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+          )
+        }
+      })
+    )
+  }
+  withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+      jvmTarget = "14"
+    }
+  }
 }

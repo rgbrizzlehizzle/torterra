@@ -3,12 +3,40 @@
  */
 package org.leafygreens.torterra
 
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import com.google.common.truth.Truth.assertThat
+import org.junit.jupiter.api.Test
+import java.io.File
+
 
 class TorterraTest {
-//    @Test fun testSomeLibraryMethod() {
-//        val classUnderTest = Library()
-//        assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'")
-//    }
+  private val snapshotPath = "src/test/resources/"
+
+  @Test
+  fun `Can Encode and Decode the Docker provider schema`() {
+    // when
+    val file = File("$snapshotPath/docker.json")
+    val json = file.readText()
+
+    // do
+    val schema = Torterra.convertToSchema(json)
+    val asJson = Torterra.schemaToJson(schema)
+
+    // expect
+    assertThat(asJson.filter { !it.isWhitespace() }).isEqualTo(json.filter { !it.isWhitespace() })
+  }
+
+  @Test
+  fun `Can encode the AWS provider schema`() {
+    // when
+    val file = File("$snapshotPath/aws.json")
+    val json = file.readText()
+
+    // do
+    val schema = Torterra.convertToSchema(json)
+
+    // expect
+    // Only checking for non-null because this schema is freaking _huge_ and there are a couple weird things
+    // they do in the descriptions that make it really annoying (like encoding &'s)
+    assertThat(schema).isNotNull()
+  }
 }
