@@ -9,7 +9,8 @@ data class ProviderSchemaWrapper(
     @Json(name = "format_version")
     val formatVersion: String,
     @Json(name = "provider_schemas")
-    val providerSchemas: Map<String, ProviderSchema>)
+    val providerSchemas: Map<String, ProviderSchema>
+)
 
 data class ProviderSchema(
     val provider: SchemaRepresentation,
@@ -22,34 +23,36 @@ data class ProviderSchema(
 data class SchemaRepresentation(
     val version: Int,
     val block: BlockRepresentation,
-    @Json(name = "description_kind")
-    val descriptionKind: String?
 )
 
 data class BlockRepresentation(
     val attributes: Map<String, BlockAttributes>?,
     @Json(name = "block_types")
-    val blockTypes: Map<String, BlockType>?
+    val blockTypes: Map<String, BlockType>?,
+    @Json(name = "description_kind")
+    val descriptionKind: String?
 )
 
 data class BlockAttributes(
-//    val type: String, // TODO Needs custom adapter
+//    val type: String, // TODO oh boy dis gonna suck
     val description: String?,
-    val required: Boolean = false,
-    val optional: Boolean = false,
-    val computed: Boolean = false,
-    val sensitive: Boolean = false
+    @Json(name = "description_kind")
+    val descriptionKind: String?,
+    val required: Boolean?,
+    val optional: Boolean?,
+    val computed: Boolean?,
+    val sensitive: Boolean?
 )
 
 enum class NestingMode {
-    Single,
-    List,
-    Set,
-    Map
+    single,
+    list,
+    set,
+    map
 }
 
 data class BlockType(
-    @Json(name = "nesting_modes")
+    @Json(name = "nesting_mode")
     val nestingMode: NestingMode?,
     val block: BlockRepresentation,
     // todo only allowed on the list and set modes... how to represent programmatically?
