@@ -77,7 +77,8 @@ object Torterra {
 fun main() {
 //    val testProvider = ProviderLookup("docker", "kreuzwerker/docker", "2.11.0")
 //    val testProvider = ProviderLookup("aws", "hashicorp/aws", "~> 3.0")
-//    Torterra.generate(testProvider)
+//    val schema = Torterra.generateJsonSchema(testProvider)
+//    print(schema)
     val snapshotPath = "lib/src/main/resources/"
     val file = File("$snapshotPath/docker.json")
     val json = file.readText()
