@@ -44,32 +44,6 @@ data class BlockAttributes(
   val sensitive: Boolean?
 )
 
-/* Simple
- "type": "string"
- */
-
-/* Collection
- "type": [ "list", "string" ]
- */
-
-/* Complex
-"type": [
-  "set",
-  [
-    "object",
-    {
-      "aux_address": [
-        "map",
-        "string"
-      ],
-      "gateway": "string",
-      "ip_range": "string",
-      "subnet": "string"
-    }
-  ]
-],
- */
-
 enum class BlockAttributeCollection(val value: String) {
   Set("set"),
   List("list"),
